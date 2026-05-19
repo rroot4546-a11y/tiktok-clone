@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="tiktok_red">#FFFE2C55</color>
+    <color name="tiktok_blue">#FF25F4EE</color>
+    <color name="dark_bg">#FF161823</color>
+    <color name="dark_surface">#FF1E1E2E</color>
+    <color name="gray_text">#FF8A8B91</color>
+</resources>
