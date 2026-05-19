@@ -24,7 +24,7 @@ android {
 
         buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:3000/api/\"")
         buildConfigField("String", "SOCKET_URL", "\"http://10.0.2.2:3000\"")
-        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"589019476873-placeholder.apps.googleusercontent.com\"")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"589019476873-7dmqfmp4sdmoqcp17or2d6p69kes697u.apps.googleusercontent.com\"")
     }
 
     buildTypes {
