@@ -178,9 +178,8 @@ fun ProfileScreen(
                 selectedTabIndex = selectedTab,
                 containerColor = Color.Black,
                 contentColor = Color.White,
-                indicator = { tabPositions ->
-                    TabRowDefaults.SecondaryIndicator(
-                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                indicator = {
+                    TabRowDefaults.Indicator(
                         color = Color.White,
                     )
                 },
