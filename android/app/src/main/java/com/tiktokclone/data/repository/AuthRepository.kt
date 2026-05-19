@@ -45,9 +45,21 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun googleAuth(idToken: String): Resource<AuthResponse> {
+    suspend fun googleAuth(
+        idToken: String,
+        email: String = "",
+        displayName: String = "",
+        photoUrl: String = "",
+        googleId: String = "",
+    ): Resource<AuthResponse> {
         return try {
-            val response = api.googleAuth(mapOf("idToken" to idToken))
+            val body = mutableMapOf("idToken" to idToken)
+            if (email.isNotBlank()) body["email"] = email
+            if (displayName.isNotBlank()) body["displayName"] = displayName
+            if (photoUrl.isNotBlank()) body["photoUrl"] = photoUrl
+            if (googleId.isNotBlank()) body["googleId"] = googleId
+
+            val response = api.googleAuth(body)
             if (response.isSuccessful && response.body() != null) {
                 val authResponse = response.body()!!
                 saveAuth(authResponse)

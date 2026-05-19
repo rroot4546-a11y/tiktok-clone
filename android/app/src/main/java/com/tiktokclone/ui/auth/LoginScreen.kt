@@ -1,5 +1,8 @@
 package com.tiktokclone.ui.auth
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,7 +24,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.tiktokclone.ui.common.components.TikTokTheme
 
 @Composable
 fun LoginScreen(
@@ -34,6 +36,14 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            viewModel.handleGoogleSignInResult(result)
+        }
+    }
 
     LaunchedEffect(uiState.isLoggedIn) {
         if (uiState.isLoggedIn) onLoginSuccess()
@@ -179,7 +189,10 @@ fun LoginScreen(
         SocialLoginButton(
             text = "Continue with Google",
             icon = Icons.Default.AccountCircle,
-            onClick = { /* Google sign in */ },
+            onClick = {
+                val signInIntent = viewModel.getGoogleSignInIntent()
+                googleSignInLauncher.launch(signInIntent)
+            },
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -187,7 +200,7 @@ fun LoginScreen(
         SocialLoginButton(
             text = "Continue with Facebook",
             icon = Icons.Default.Facebook,
-            onClick = { /* Facebook sign in */ },
+            onClick = { /* Facebook sign in - future implementation */ },
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -195,7 +208,7 @@ fun LoginScreen(
         SocialLoginButton(
             text = "Continue with Phone",
             icon = Icons.Default.Phone,
-            onClick = { /* Phone auth */ },
+            onClick = { /* Phone auth - future implementation */ },
         )
 
         Spacer(modifier = Modifier.weight(1f))

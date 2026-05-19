@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "000000000000",
-    "project_id": "tiktok-clone-dev",
-    "storage_bucket": "tiktok-clone-dev.appspot.com"
+    "project_number": "589019476873",
+    "project_id": "roza-59437",
+    "storage_bucket": "roza-59437.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
+        "mobilesdk_app_id": "1:589019476873:android:a187c85f5625062cc06758",
         "android_client_info": {
           "package_name": "com.tiktokclone"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDEVPLACEHOLDERKEY000000000000"
+          "current_key": "AIzaSyDjX4_a9Zxn0s0MOXP6wc0pXPUwhnH5OZY"
         }
       ],
       "services": {
