@@ -3,12 +3,19 @@ const User = require('../models/User');
 
 const authenticate = async (req, res, next) => {
   try {
+    let token = null;
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Authentication required' });
+    const xAuthToken = req.headers['x-auth-token'];
+
+    if (xAuthToken) {
+      token = xAuthToken;
+    } else if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
     }
 
-    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.userId);
 
@@ -33,9 +40,17 @@ const authenticate = async (req, res, next) => {
 
 const optionalAuth = async (req, res, next) => {
   try {
+    let token = null;
     const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.split(' ')[1];
+    const xAuthToken = req.headers['x-auth-token'];
+
+    if (xAuthToken) {
+      token = xAuthToken;
+    } else if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+
+    if (token) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = await User.findById(decoded.userId);
       req.userId = req.user?._id;

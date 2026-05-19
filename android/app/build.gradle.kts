@@ -22,8 +22,9 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:3000/api/\"")
-        buildConfigField("String", "SOCKET_URL", "\"http://10.0.2.2:3000\"")
+        buildConfigField("String", "BASE_URL", "\"https://25492f3565c3-tunnel-mrljezkd.devinapps.com/api/\"")
+        buildConfigField("String", "SOCKET_URL", "\"https://25492f3565c3-tunnel-mrljezkd.devinapps.com\"")
+        buildConfigField("String", "TUNNEL_AUTH", "\"user:1e35fc63230f2a40d73188e1d534447f\"")
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"589019476873-7dmqfmp4sdmoqcp17or2d6p69kes697u.apps.googleusercontent.com\"")
     }
 

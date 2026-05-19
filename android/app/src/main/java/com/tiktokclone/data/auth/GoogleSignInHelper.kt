@@ -2,11 +2,12 @@ package com.tiktokclone.data.auth
 
 import android.content.Context
 import android.content.Intent
-import androidx.activity.result.ActivityResultLauncher
+import android.util.Log
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
@@ -15,6 +16,10 @@ import com.tiktokclone.BuildConfig
 import kotlinx.coroutines.tasks.await
 
 class GoogleSignInHelper(private val context: Context) {
+
+    companion object {
+        private const val TAG = "GoogleSignIn"
+    }
 
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
 
@@ -26,13 +31,27 @@ class GoogleSignInHelper(private val context: Context) {
 
     val googleSignInClient: GoogleSignInClient = GoogleSignIn.getClient(context, gso)
 
-    fun getSignInIntent(): Intent = googleSignInClient.signInIntent
+    fun getSignInIntent(): Intent {
+        googleSignInClient.signOut()
+        return googleSignInClient.signInIntent
+    }
 
-    fun handleSignInResult(task: Task<GoogleSignInAccount>): GoogleSignInAccount? {
+    fun handleSignInResult(task: Task<GoogleSignInAccount>): GoogleSignInResult {
         return try {
-            task.getResult(ApiException::class.java)
+            val account = task.getResult(ApiException::class.java)
+            Log.d(TAG, "Sign-in successful: ${account.email}")
+            GoogleSignInResult(account = account)
         } catch (e: ApiException) {
-            null
+            val errorMessage = when (e.statusCode) {
+                GoogleSignInStatusCodes.SIGN_IN_CANCELLED -> "Sign-in cancelled"
+                GoogleSignInStatusCodes.SIGN_IN_CURRENTLY_IN_PROGRESS -> "Sign-in already in progress"
+                GoogleSignInStatusCodes.SIGN_IN_FAILED -> "Sign-in failed. Check SHA-1 fingerprint in Firebase Console"
+                10 -> "Developer error: Check SHA-1 fingerprint and Web Client ID in Firebase Console"
+                12500 -> "Sign-in failed: Google Play Services error"
+                else -> "Google Sign-In error (code: ${e.statusCode})"
+            }
+            Log.e(TAG, "Sign-in failed with status code: ${e.statusCode}", e)
+            GoogleSignInResult(error = errorMessage, statusCode = e.statusCode)
         }
     }
 
@@ -52,7 +71,7 @@ class GoogleSignInHelper(private val context: Context) {
                 googleId = firebaseUser?.uid ?: account.id ?: "",
             )
         } catch (e: Exception) {
-            // Fallback: use Google Sign-In token directly without Firebase
+            Log.w(TAG, "Firebase auth failed, using Google token directly", e)
             FirebaseAuthResult(
                 success = true,
                 idToken = account.idToken ?: "",
@@ -69,6 +88,12 @@ class GoogleSignInHelper(private val context: Context) {
         googleSignInClient.signOut()
     }
 }
+
+data class GoogleSignInResult(
+    val account: GoogleSignInAccount? = null,
+    val error: String? = null,
+    val statusCode: Int = 0,
+)
 
 data class FirebaseAuthResult(
     val success: Boolean,

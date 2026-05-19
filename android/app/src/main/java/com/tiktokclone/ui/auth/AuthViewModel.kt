@@ -103,50 +103,67 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             try {
-                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                val account = googleSignInHelper.handleSignInResult(task)
+                if (result.data == null) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "Google sign-in was cancelled",
+                    )
+                    return@launch
+                }
 
-                if (account != null) {
-                    val authResult = googleSignInHelper.firebaseAuthWithGoogle(account)
-                    if (authResult.success) {
-                        when (val apiResult = authRepository.googleAuth(
-                            idToken = authResult.idToken,
-                            email = authResult.email,
-                            displayName = authResult.displayName,
-                            photoUrl = authResult.photoUrl,
-                            googleId = authResult.googleId,
-                        )) {
-                            is Resource.Success -> {
-                                _uiState.value = _uiState.value.copy(
-                                    isLoading = false,
-                                    isLoggedIn = true,
-                                    user = apiResult.data.user,
-                                )
-                            }
-                            is Resource.Error -> {
-                                _uiState.value = _uiState.value.copy(
-                                    isLoading = false,
-                                    error = apiResult.message,
-                                )
-                            }
-                            is Resource.Loading -> {}
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                val signInResult = googleSignInHelper.handleSignInResult(task)
+
+                if (signInResult.error != null) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = signInResult.error,
+                    )
+                    return@launch
+                }
+
+                val account = signInResult.account ?: run {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "Google sign-in failed: no account returned",
+                    )
+                    return@launch
+                }
+
+                val authResult = googleSignInHelper.firebaseAuthWithGoogle(account)
+                if (authResult.success) {
+                    when (val apiResult = authRepository.googleAuth(
+                        idToken = authResult.idToken,
+                        email = authResult.email,
+                        displayName = authResult.displayName,
+                        photoUrl = authResult.photoUrl,
+                        googleId = authResult.googleId,
+                    )) {
+                        is Resource.Success -> {
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                isLoggedIn = true,
+                                user = apiResult.data.user,
+                            )
                         }
-                    } else {
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            error = authResult.error ?: "Google sign-in failed",
-                        )
+                        is Resource.Error -> {
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                error = apiResult.message ?: "Backend authentication failed",
+                            )
+                        }
+                        is Resource.Loading -> {}
                     }
                 } else {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = "Google sign-in cancelled",
+                        error = authResult.error ?: "Firebase authentication failed",
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = e.message ?: "Google sign-in failed",
+                    error = "Google sign-in error: ${e.message}",
                 )
             }
         }

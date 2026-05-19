@@ -1,6 +1,5 @@
 package com.tiktokclone.ui.auth
 
-import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -40,9 +39,7 @@ fun LoginScreen(
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            viewModel.handleGoogleSignInResult(result)
-        }
+        viewModel.handleGoogleSignInResult(result)
     }
 
     LaunchedEffect(uiState.isLoggedIn) {

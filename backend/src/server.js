@@ -36,6 +36,9 @@ const io = new Server(server, {
 
 app.set('io', io);
 
+// Trust proxy for tunnel/reverse proxy setups
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(cors());
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
