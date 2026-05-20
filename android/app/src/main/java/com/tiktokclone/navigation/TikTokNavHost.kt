@@ -1,7 +1,9 @@
 package com.tiktokclone.navigation
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -9,8 +11,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -131,9 +136,9 @@ fun MainScreen(rootNavController: NavHostController) {
 
     val bottomNavItems = listOf(
         BottomNavItem(Screen.Home.route, "Home", Icons.Filled.Home, Icons.Outlined.Home),
-        BottomNavItem(Screen.Discover.route, "Discover", Icons.Filled.Search, Icons.Outlined.Search),
-        BottomNavItem(Screen.Upload.route, "", Icons.Filled.AddCircle, Icons.Outlined.AddCircle),
-        BottomNavItem(Screen.Inbox.route, "Inbox", Icons.Filled.Email, Icons.Outlined.Email),
+        BottomNavItem(Screen.Discover.route, "Discover", Icons.Filled.Explore, Icons.Outlined.Explore),
+        BottomNavItem(Screen.Upload.route, "", Icons.Filled.Add, Icons.Outlined.Add),
+        BottomNavItem(Screen.Inbox.route, "Inbox", Icons.Filled.ChatBubble, Icons.Outlined.ChatBubble),
         BottomNavItem(Screen.Profile.route, "Profile", Icons.Filled.Person, Icons.Outlined.Person),
     )
 
@@ -143,61 +148,104 @@ fun MainScreen(rootNavController: NavHostController) {
     Scaffold(
         containerColor = Color.Black,
         bottomBar = {
-            NavigationBar(
-                containerColor = Color.Black.copy(alpha = 0.95f),
-                tonalElevation = 0.dp,
-                modifier = Modifier.height(60.dp),
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Black.copy(alpha = 0.97f))
+                    .navigationBarsPadding(),
             ) {
-                bottomNavItems.forEach { item ->
-                    val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
+                Divider(
+                    color = Color.White.copy(alpha = 0.1f),
+                    thickness = 0.5.dp,
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    bottomNavItems.forEach { item ->
+                        val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
 
-                    NavigationBarItem(
-                        icon = {
-                            if (item.route == Screen.Upload.route) {
+                        if (item.route == Screen.Upload.route) {
+                            // TikTok-style create button
+                            Box(
+                                modifier = Modifier
+                                    .clickable {
+                                        navController.navigate(item.route)
+                                    }
+                                    .height(30.dp)
+                                    .width(48.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                // Colored background layers
                                 Box(
-                                    modifier = Modifier.size(44.dp),
+                                    modifier = Modifier
+                                        .offset(x = (-4).dp)
+                                        .height(28.dp)
+                                        .width(40.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFF25F4EE))
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .offset(x = 4.dp)
+                                        .height(28.dp)
+                                        .width(40.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFFFE2C55))
+                                )
+                                // White center with + icon
+                                Box(
+                                    modifier = Modifier
+                                        .height(28.dp)
+                                        .width(40.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color.White),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Filled.AddCircle,
-                                        contentDescription = "Upload",
-                                        modifier = Modifier.size(36.dp),
-                                        tint = Color.White,
+                                        Icons.Default.Add,
+                                        contentDescription = "Create",
+                                        tint = Color.Black,
+                                        modifier = Modifier.size(22.dp),
                                     )
                                 }
-                            } else {
+                            }
+                        } else {
+                            // Regular nav item
+                            Column(
+                                modifier = Modifier
+                                    .clickable {
+                                        navController.navigate(item.route) {
+                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                    .width(56.dp)
+                                    .fillMaxHeight(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                            ) {
                                 Icon(
                                     imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
                                     contentDescription = item.label,
                                     modifier = Modifier.size(24.dp),
+                                    tint = if (selected) Color.White else Color.White.copy(alpha = 0.6f),
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = item.label,
+                                    fontSize = 10.sp,
+                                    color = if (selected) Color.White else Color.White.copy(alpha = 0.6f),
                                 )
                             }
-                        },
-                        label = if (item.route != Screen.Upload.route) {
-                            { Text(item.label, fontSize = 10.sp) }
-                        } else null,
-                        selected = selected,
-                        onClick = {
-                            if (item.route == Screen.Upload.route) {
-                                navController.navigate(item.route)
-                                return@NavigationBarItem
-                            }
-                            navController.navigate(item.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color.White,
-                            unselectedIconColor = Color.Gray,
-                            selectedTextColor = Color.White,
-                            unselectedTextColor = Color.Gray,
-                            indicatorColor = Color.Transparent,
-                        ),
-                    )
+                        }
+                    }
                 }
             }
         }

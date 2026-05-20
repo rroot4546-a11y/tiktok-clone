@@ -3,20 +3,26 @@ package com.tiktokclone.ui.home
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -25,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.tiktokclone.data.models.Video
 import com.tiktokclone.utils.formatCount
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -34,8 +41,10 @@ fun HomeScreen(
     onNavigateToSearch: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var selectedTab by remember { mutableIntStateOf(0) }
+    val topTabs = listOf("Explore", "Following", "For You")
+    var selectedTab by remember { mutableIntStateOf(2) }
     var showComments by remember { mutableStateOf<String?>(null) }
+    val coroutineScope = rememberCoroutineScope()
 
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
         if (uiState.videos.isNotEmpty()) {
@@ -67,45 +76,112 @@ fun HomeScreen(
                 modifier = Modifier.align(Alignment.Center),
                 color = Color.White,
             )
+        } else {
+            // Empty state
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Icon(
+                    Icons.Default.VideoLibrary,
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.4f),
+                    modifier = Modifier.size(64.dp),
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "No videos yet",
+                    color = Color.White.copy(alpha = 0.6f),
+                    fontSize = 16.sp,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Upload a video to get started",
+                    color = Color.White.copy(alpha = 0.4f),
+                    fontSize = 13.sp,
+                )
+            }
         }
 
-        // Top bar
-        Row(
+        // Top bar - TikTok style
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
+                .align(Alignment.TopCenter),
         ) {
-            Spacer(modifier = Modifier.weight(1f))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                // LIVE button
+                IconButton(onClick = { }) {
+                    Icon(
+                        Icons.Outlined.LiveTv,
+                        contentDescription = "LIVE",
+                        tint = Color.White,
+                        modifier = Modifier.size(26.dp),
+                    )
+                }
 
-            Text(
-                text = "Following",
-                color = if (selectedTab == 0) Color.White else Color.White.copy(alpha = 0.6f),
-                fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal,
-                fontSize = 17.sp,
-                modifier = Modifier.clickable { selectedTab = 0; viewModel.loadFollowingFeed() },
-            )
+                // Center tabs
+                Row(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    topTabs.forEachIndexed { index, tab ->
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .clickable {
+                                    selectedTab = index
+                                    when (index) {
+                                        1 -> viewModel.loadFollowingFeed()
+                                        2 -> viewModel.loadFeed()
+                                    }
+                                }
+                                .padding(horizontal = 10.dp, vertical = 6.dp),
+                        ) {
+                            Text(
+                                text = tab,
+                                color = if (selectedTab == index) Color.White else Color.White.copy(alpha = 0.55f),
+                                fontWeight = if (selectedTab == index) FontWeight.ExtraBold else FontWeight.Normal,
+                                fontSize = if (selectedTab == index) 17.sp else 15.sp,
+                                style = TextStyle(
+                                    shadow = Shadow(
+                                        color = Color.Black.copy(alpha = 0.5f),
+                                        blurRadius = 4f,
+                                    )
+                                ),
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            if (selectedTab == index) {
+                                Box(
+                                    modifier = Modifier
+                                        .width(24.dp)
+                                        .height(2.5.dp)
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .background(Color.White)
+                                )
+                            } else {
+                                Spacer(modifier = Modifier.height(2.5.dp))
+                            }
+                        }
+                    }
+                }
 
-            Text(
-                text = "  |  ",
-                color = Color.White.copy(alpha = 0.3f),
-                fontSize = 17.sp,
-            )
-
-            Text(
-                text = "For You",
-                color = if (selectedTab == 1) Color.White else Color.White.copy(alpha = 0.6f),
-                fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal,
-                fontSize = 17.sp,
-                modifier = Modifier.clickable { selectedTab = 1; viewModel.loadFeed() },
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            IconButton(onClick = onNavigateToSearch) {
-                Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.White)
+                // Search icon
+                IconButton(onClick = onNavigateToSearch) {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = Color.White,
+                        modifier = Modifier.size(26.dp),
+                    )
+                }
             }
         }
 
@@ -178,24 +254,46 @@ fun VideoItem(
         Column(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 12.dp, bottom = 80.dp),
+                .padding(end = 12.dp, bottom = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            // User avatar
+            // User avatar with + follow button
             Box(
+                contentAlignment = Alignment.BottomCenter,
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .border(2.dp, Color.White, CircleShape)
+                    .padding(bottom = 8.dp)
                     .clickable { onUserClick() },
             ) {
-                AsyncImage(
-                    model = video.user.avatar.ifEmpty { null },
-                    contentDescription = video.user.username,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                )
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, Color.White, CircleShape),
+                ) {
+                    AsyncImage(
+                        model = video.user.avatar.ifEmpty { null },
+                        contentDescription = video.user.username,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                    )
+                }
+                // Red + follow button
+                Box(
+                    modifier = Modifier
+                        .offset(y = 10.dp)
+                        .size(20.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFFE2C55)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = "Follow",
+                        tint = Color.White,
+                        modifier = Modifier.size(14.dp),
+                    )
+                }
             }
 
             // Like
@@ -249,11 +347,11 @@ fun VideoItem(
             }
         }
 
-        // Bottom info
+        // Bottom info overlay
         Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(start = 16.dp, bottom = 80.dp, end = 80.dp),
+                .padding(start = 16.dp, bottom = 16.dp, end = 80.dp),
         ) {
             // Username
             Text(
@@ -262,11 +360,14 @@ fun VideoItem(
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 modifier = Modifier.clickable { onUserClick() },
+                style = TextStyle(
+                    shadow = Shadow(color = Color.Black.copy(alpha = 0.5f), blurRadius = 4f)
+                ),
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Caption
+            // Caption with hashtags
             if (video.caption.isNotEmpty()) {
                 Text(
                     text = video.caption,
@@ -274,11 +375,30 @@ fun VideoItem(
                     fontSize = 14.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
+                    style = TextStyle(
+                        shadow = Shadow(color = Color.Black.copy(alpha = 0.5f), blurRadius = 4f)
+                    ),
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // Music
+            // Hashtags row
+            if (video.hashtags.isNotEmpty()) {
+                Text(
+                    text = video.hashtags.joinToString(" ") { "#$it" },
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = TextStyle(
+                        shadow = Shadow(color = Color.Black.copy(alpha = 0.5f), blurRadius = 4f)
+                    ),
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            // Music marquee
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     Icons.Default.MusicNote,
@@ -286,13 +406,16 @@ fun VideoItem(
                     tint = Color.White,
                     modifier = Modifier.size(14.dp),
                 )
-                Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = "${video.music.name} - ${video.music.artist.ifEmpty { video.user.username }}",
                     color = Color.White,
                     fontSize = 13.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    style = TextStyle(
+                        shadow = Shadow(color = Color.Black.copy(alpha = 0.5f), blurRadius = 4f)
+                    ),
                 )
             }
         }
@@ -309,9 +432,17 @@ fun ActionButton(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        IconButton(onClick = onClick, modifier = Modifier.size(40.dp)) {
-            Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(32.dp))
+        IconButton(onClick = onClick, modifier = Modifier.size(42.dp)) {
+            Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(30.dp))
         }
-        Text(text = count, color = Color.White, fontSize = 12.sp)
+        Text(
+            text = count,
+            color = Color.White,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            style = TextStyle(
+                shadow = Shadow(color = Color.Black.copy(alpha = 0.5f), blurRadius = 4f)
+            ),
+        )
     }
 }
