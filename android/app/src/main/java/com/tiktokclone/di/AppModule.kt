@@ -5,6 +5,7 @@ import com.tiktokclone.BuildConfig
 import com.tiktokclone.data.api.ApiService
 import com.tiktokclone.data.api.AuthInterceptor
 import com.tiktokclone.data.local.TokenManager
+import com.tiktokclone.data.api.VeoAiService
 import com.tiktokclone.data.repository.AuthRepository
 import com.tiktokclone.data.repository.ChatRepository
 import com.tiktokclone.data.repository.VideoRepository
@@ -95,5 +96,11 @@ object AppModule {
     @Singleton
     fun provideChatRepository(apiService: ApiService): ChatRepository {
         return ChatRepository(apiService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideVeoAiService(): VeoAiService {
+        return VeoAiService()
     }
 }

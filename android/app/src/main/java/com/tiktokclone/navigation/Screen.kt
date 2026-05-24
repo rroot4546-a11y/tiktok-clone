@@ -36,6 +36,7 @@ sealed class Screen(val route: String) {
     }
     object Search : Screen("search")
     object Notifications : Screen("notifications")
+    object AiVideo : Screen("ai_video")
     object HashtagVideos : Screen("hashtag/{tag}") {
         fun createRoute(tag: String) = "hashtag/$tag"
     }

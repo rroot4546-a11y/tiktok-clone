@@ -35,6 +35,7 @@ import com.tiktokclone.ui.profile.EditProfileScreen
 import com.tiktokclone.ui.search.SearchScreen
 import com.tiktokclone.ui.notifications.NotificationsScreen
 import com.tiktokclone.ui.home.CommentsSheet
+import com.tiktokclone.ui.aivideo.AiVideoScreen
 import com.tiktokclone.ui.common.components.TikTokTheme
 
 data class BottomNavItem(
@@ -127,6 +128,12 @@ fun TikTokNavHost() {
                 onNavigateBack = { navController.popBackStack() },
             )
         }
+
+        composable(Screen.AiVideo.route) {
+            AiVideoScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
     }
 }
 
@@ -169,12 +176,48 @@ fun MainScreen(rootNavController: NavHostController) {
                         val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
 
                         if (item.route == Screen.Upload.route) {
+                            var showCreateMenu by remember { mutableStateOf(false) }
+
+                            // Create menu dropdown
+                            Box {
+                                DropdownMenu(
+                                    expanded = showCreateMenu,
+                                    onDismissRequest = { showCreateMenu = false },
+                                    modifier = Modifier.background(Color(0xFF2C2C2C)),
+                                ) {
+                                    DropdownMenuItem(
+                                        text = {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(Icons.Default.VideoCall, null, tint = Color.White, modifier = Modifier.size(20.dp))
+                                                Spacer(modifier = Modifier.width(10.dp))
+                                                Text("Upload Video", color = Color.White)
+                                            }
+                                        },
+                                        onClick = {
+                                            showCreateMenu = false
+                                            navController.navigate(Screen.Upload.route)
+                                        },
+                                    )
+                                    DropdownMenuItem(
+                                        text = {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(Icons.Default.AutoAwesome, null, tint = Color(0xFF25F4EE), modifier = Modifier.size(20.dp))
+                                                Spacer(modifier = Modifier.width(10.dp))
+                                                Text("AI Generate", color = Color.White)
+                                            }
+                                        },
+                                        onClick = {
+                                            showCreateMenu = false
+                                            rootNavController.navigate(Screen.AiVideo.route)
+                                        },
+                                    )
+                                }
+                            }
+
                             // TikTok-style create button
                             Box(
                                 modifier = Modifier
-                                    .clickable {
-                                        navController.navigate(item.route)
-                                    }
+                                    .clickable { showCreateMenu = true }
                                     .height(30.dp)
                                     .width(48.dp),
                                 contentAlignment = Alignment.Center,
