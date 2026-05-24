@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "589019476873",
+    "project_id": "roza-59437",
+    "storage_bucket": "roza-59437.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:589019476873:android:a187c85f5625062cc06758",
+        "android_client_info": {
+          "package_name": "com.tiktokclone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "589019476873-7dmqfmp4sdmoqcp17or2d6p69kes697u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjX4_a9Zxn0s0MOXP6wc0pXPUwhnH5OZY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "589019476873-7dmqfmp4sdmoqcp17or2d6p69kes697u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
